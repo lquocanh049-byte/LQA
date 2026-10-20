@@ -1,0 +1,171 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#09090c">
+<title>LQA | Gaming Gallery</title>
+<style>
+*{box-sizing:border-box}
+:root{--red:#ff2438;--bg:#09090c;--panel:#15151b}
+body{margin:0;background:var(--bg);color:#fff;font-family:Arial,sans-serif}
+header{padding:20px 6%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #292932}
+.logo{font-size:23px;font-weight:900;letter-spacing:2px}
+.logo span,h1 span{color:var(--red)}
+.tag{font-size:10px;color:#aaa;letter-spacing:2px}
+.hero{padding:55px 6% 40px;background:radial-gradient(ellipse at 80% 0%,#50101b,transparent 65%)}
+.hero small{color:var(--red);letter-spacing:3px;font-weight:bold}
+h1{font-size:clamp(38px,9vw,68px);margin:18px 0;font-weight:900}
+.hero p{color:#aaa}
+main{padding:25px 6% 60px}
+.filters{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:25px}
+button,input{font:inherit}
+.filter{background:var(--panel);border:1px solid #33333d;color:#ddd;padding:10px 14px;border-radius:5px;cursor:pointer}
+.filter.active{background:var(--red);border-color:var(--red);color:white}
+#search{width:100%;padding:13px;background:var(--panel);border:1px solid #33333d;border-radius:5px;color:white;margin-bottom:24px}
+.heading{display:flex;justify-content:space-between;align-items:center}
+.heading h2{font-size:19px}
+#count{font-size:12px;color:#aaa}
+.gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid #292932;border-radius:7px;overflow:hidden;cursor:pointer}
+.card img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;background:#202027}
+.card .info{padding:12px}
+.info strong{font-size:14px}
+.info small{display:block;color:var(--red);font-size:10px;margin-top:7px;letter-spacing:1px}
+.empty{grid-column:1/-1;text-align:center;padding:35px;color:#aaa}
+footer{text-align:center;padding:25px;color:#777;border-top:1px solid #292932;font-size:12px}
+#viewer{display:none;position:fixed;inset:0;background:#000f;z-index:10;align-items:center;justify-content:center;padding:18px}
+#viewer.open{display:flex}
+#viewer img{max-width:100%;max-height:80vh;object-fit:contain}
+#close{position:absolute;right:15px;top:15px;background:#25252c;color:white;border:1px solid #555;padding:12px;border-radius:5px}
+@media(min-width:650px){.gallery{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}}
+@media(min-width:1000px){.gallery{grid-template-columns:repeat(4,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">LQA<span>.</span>GALLERY</div>
+  <div class="tag">GAMING CREATIVE</div>
+</header>
+
+<section class="hero">
+  <small>YOUR VISUAL COLLECTION</small>
+  <h1>MY <span>GALLERY</span></h1>
+  <p>All your designs. One destination.</p>
+</section>
+
+<main>
+  <div class="filters" id="filters">
+    <button class="filter active" data-cat="all">Tất cả</button>
+    <button class="filter" data-cat="bxh">BXH</button>
+    <button class="filter" data-cat="banner">Banner</button>
+    <button class="filter" data-cat="profile">Profile</button>
+    <button class="filter" data-cat="lineup">Lineup</button>
+  </div>
+
+  <input id="search" type="search" placeholder="Tìm ảnh...">
+
+  <div class="heading">
+    <h2>THƯ VIỆN ẢNH</h2>
+    <span id="count"></span>
+  </div>
+  <div class="gallery" id="gallery"></div>
+</main>
+
+<footer>© 2026 LQA GALLERY · GAMING COMMUNITY</footer>
+
+<div id="viewer" role="dialog" aria-modal="true">
+  <button id="close">ĐÓNG ✕</button>
+  <img id="large" alt="Ảnh đang xem">
+</div>
+
+<script>
+// DANH SÁCH ẢNH
+// Đổi tên file và tiêu đề theo ảnh bạn tải lên thư mục photos.
+
+const photos = [
+  {title:"BXH 01",category:"bxh",src:"photos/bxh1.jpg"},
+  {title:"BXH 02",category:"bxh",src:"photos/bxh2.jpg"},
+  {title:"Banner 01",category:"banner",src:"photos/banner1.jpg"},
+  {title:"Profile 01",category:"profile",src:"photos/profile1.jpg"},
+  {title:"Lineup 01",category:"lineup",src:"photos/lineup1.jpg"}
+];
+
+const gallery=document.getElementById("gallery");
+const count=document.getElementById("count");
+const search=document.getElementById("search");
+let category="all";
+
+function render(){
+  const list=photos.filter(p=>
+    (category==="all"||p.category===category)&&
+    p.title.toLowerCase().includes(search.value.toLowerCase())
+  );
+
+  gallery.innerHTML="";
+  count.textContent=list.length+" ẢNH";
+
+  if(!list.length){
+    gallery.innerHTML='<div class="empty">Chưa có ảnh phù hợp.</div>';
+    return;
+  }
+
+  list.forEach(p=>{
+    const card=document.createElement("article");
+    card.className="card";
+
+    const img=document.createElement("img");
+    img.src=p.src;
+    img.alt=p.title;
+    img.loading="lazy";
+    img.onerror=()=>{img.style.opacity=".2";};
+
+    const info=document.createElement("div");
+    info.className="info";
+
+    const title=document.createElement("strong");
+    title.textContent=p.title;
+
+    const label=document.createElement("small");
+    label.textContent=p.category.toUpperCase();
+
+    info.append(title,label);
+    card.append(img,info);
+
+    card.onclick=()=>{
+      document.getElementById("large").src=p.src;
+      document.getElementById("viewer").classList.add("open");
+    };
+
+    gallery.appendChild(card);
+  });
+}
+
+document.querySelectorAll(".filter").forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll(".filter").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    category=btn.dataset.cat;
+    render();
+  };
+});
+
+search.addEventListener("input",render);
+
+document.getElementById("close").onclick=()=>{
+  document.getElementById("viewer").classList.remove("open");
+};
+
+document.getElementById("viewer").onclick=e=>{
+  if(e.target.id==="viewer")e.currentTarget.classList.remove("open");
+};
+
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape")document.getElementById("viewer").classList.remove("open");
+});
+
+render();
+</script>
+</body>
+</html>
